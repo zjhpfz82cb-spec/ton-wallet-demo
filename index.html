@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba TON</title>
+</head>
+<body>
+  <h1>Prueba TON</h1>
+  <p>Esta página solo conecta la cartera y muestra su dirección. No envía fondos.</p>
+
+  <div id="ton-connect"></div>
+  <p id="estado">Cartera desconectada.</p>
+
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+  <script>
+    const ui = new TON_CONNECT_UI.TonConnectUI({
+      manifestUrl: "https://zjhpfz82cb-spec.github.io/ton-wallet-demo/tonconnect-manifest.json",
+      buttonRootId: "ton-connect"
+    });
+
+    ui.onStatusChange(wallet => {
+      document.getElementById("estado").textContent = wallet
+        ? "Cartera conectada: " + wallet.account.address
+        : "Cartera desconectada.";
+    });
+  </script>
+</body>
+</html>
