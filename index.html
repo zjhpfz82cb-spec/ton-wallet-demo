@@ -7,22 +7,47 @@
 </head>
 <body>
   <h1>Prueba TON</h1>
-  <p>Esta página solo conecta la cartera y muestra su dirección. No envía fondos.</p>
+  <p>Solo muestra la dirección conectada y su saldo de TON. No envía fondos.</p>
 
   <div id="ton-connect"></div>
   <p id="estado">Cartera desconectada.</p>
+  <p id="saldo"></p>
 
   <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
   <script>
+    const estado = document.getElementById("estado");
+    const saldo = document.getElementById("saldo");
+
     const ui = new TON_CONNECT_UI.TonConnectUI({
       manifestUrl: "https://zjhpfz82cb-spec.github.io/ton-wallet-demo/tonconnect-manifest.json",
       buttonRootId: "ton-connect"
     });
 
-    ui.onStatusChange(wallet => {
-      document.getElementById("estado").textContent = wallet
-        ? "Cartera conectada: " + wallet.account.address
-        : "Cartera desconectada.";
+    ui.onStatusChange(async wallet => {
+      if (!wallet) {
+        estado.textContent = "Cartera desconectada.";
+        saldo.textContent = "";
+        return;
+      }
+
+      const address = wallet.account.address;
+      estado.textContent = "Cartera conectada: " + address;
+      saldo.textContent = "Consultando saldo de TON…";
+
+      try {
+        const url = "https://toncenter.com/api/v3/accountStates?address="
+          + encodeURIComponent(address) + "&include_boc=false";
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Error consultando el saldo");
+
+        const data = await response.json();
+        const balanceNano = BigInt(data.accounts?.[0]?.balance ?? "0");
+        const ton = Number(balanceNano) / 1_000_000_000;
+
+        saldo.textContent = "Saldo: " + ton.toFixed(4) + " TON";
+      } catch {
+        saldo.textContent = "No pude consultar el saldo; prueba más tarde.";
+      }
     });
   </script>
 </body>
